@@ -72,10 +72,21 @@ tens = [
     'eighty',
     'ninety',
 ]
-higher_orders = {
-    i: s for i, s
-    in zip([2, 3, 6, 9], ['hundred', 'thousand', 'million', 'billion'])
-}
+higher_order_names = [
+    'hundred',
+    'thousand',
+    'million',
+    'billion',
+    'trillion',
+    'quadrillion',
+    'quintillion',
+    'sextillion',
+    'septillion',
+    'octillion',
+    'nonillion',
+]
+higher_orders = [2] + [3*i for i in range(1, len(higher_order_names))]
+higher_order_map = {i: s for i, s in zip(higher_orders, higher_order_names)}
 
 
 class OOMError(TypeError):
@@ -101,7 +112,7 @@ def spell(n: int) -> str:
         if ones_place == 0:
             return f"{tens[tens_place-1]}"
         return f"{tens[tens_place-1]}-{zero_to_twenty[ones_place]}"
-    elif 2 <= oom <= 9:
+    elif 2 <= oom <= higher_orders[-1]:
         return parse_higher_order(n)
     else:
         raise OOMError(oom) from None
@@ -111,15 +122,15 @@ def parse_higher_order(n: int) -> str:
     """Recursively parse orders of magnitude higher than 1."""
     str_n = str(n)
     oom = len(str_n) - 1
-    if oom in higher_orders:
-        base = f'{spell(int(str_n[0]))}-{higher_orders[oom]}'
+    if oom in higher_order_map:
+        base = f'{spell(int(str_n[0]))}-{higher_order_map[oom]}'
         r = n % int(10**oom)
     else:
-        orders = list(higher_orders.keys())
+        orders = list(higher_order_map.keys())
         pos = bisect.bisect_left(orders, oom) - 1
         clt = orders[pos]
         delta = oom - clt
-        base = f'{spell(int(str_n[:delta+1]))}-{higher_orders[clt]}'
+        base = f'{spell(int(str_n[:delta+1]))}-{higher_order_map[clt]}'
         r = n % int(10**clt)
     return f'{base} {spell(r)}' if r > 0 else base
 
