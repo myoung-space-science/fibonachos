@@ -12,9 +12,15 @@ def main(n: int) -> None:
     third word. Note that this algorithm assumes English as the language.
     """
     subseq = [0, 1, 1]
+    triples = []
     for _ in range(n):
         subseq = update(subseq)
-        print(subseq)
+        spelled = [spell(s) for s in subseq]
+        match1 = spelled[0][-1] == spelled[1][0]
+        match2 = spelled[1][-1] == spelled[2][0]
+        if match1 and match2:
+            triples.append(spelled)
+    print(triples)
 
 
 def update(seq: List[int]) -> List[int]:
