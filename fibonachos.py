@@ -143,7 +143,7 @@ def end_letters(n: int) -> Tuple[str, str]:
     return first, end_letters(hundreds)[1]
 
 
-def test_letters():
+def test_end_letters():
     """Test the function that extracts first and final letters for a number."""
     # Test 0-9
     firsts = ['z', 'o', 't', 't', 'f', 'f', 's', 's', 'e', 'n']
