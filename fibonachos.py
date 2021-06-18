@@ -40,7 +40,7 @@ class FibSub:
 
 
 
-def main(n: int, length: int, filepath: Union[str, Path]) -> None:
+def main(length: int, max_num: int=1, filepath: Union[str, Path]=None) -> None:
     """Find the first `n` lexical tuples in the Fibonacci sequence.
 
     This routine defines a "lexical tuple" to be a tuple of numbers such that
@@ -53,7 +53,7 @@ def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     """
     subseq = FibSub(length)
     tuples = []
-    while len(tuples) < n:
+    while len(tuples) < max_num:
         if lexical(subseq):
             tuples.append(list(subseq))
         subseq = next(subseq)
@@ -197,14 +197,16 @@ if __name__ == '__main__':
         formatter_class=argparse.RawTextHelpFormatter,
     )
     p.add_argument(
-        'n',
-        help="the number of lexical triples to find",
-        type=int,
-    )
-    p.add_argument(
         'length',
         help="the length of tuples to search for (e.g., 3 for triples)",
         type=int,
+    )
+    p.add_argument(
+        '-n',
+        '--max_num',
+        help="the maximum number of lexical tuples to find",
+        type=int,
+        default=1,
     )
     p.add_argument(
         '-o',
