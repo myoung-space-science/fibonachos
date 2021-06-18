@@ -20,7 +20,7 @@ def main(n: int) -> None:
             match1 = spelled[0][-1] == spelled[1][0]
             match2 = spelled[1][-1] == spelled[2][0]
             if match1 and match2:
-                triples.append(spelled)
+                triples.append(merge(spelled))
         except OOMError:
             print(f"Checked up to {subseq}")
             break
@@ -31,6 +31,11 @@ def update(seq: List[int]) -> List[int]:
     """Update a running subsequence of the Fibonacci sequence."""
     value = seq[-2] + seq[-1]
     return seq[1:] + [value]
+
+
+def merge(triple: str) -> str:
+    """Merge pairs in a lexical triple."""
+    return triple[0][:-1] + triple[1] + triple[2][1:]
 
 
 zero_to_twenty = [
