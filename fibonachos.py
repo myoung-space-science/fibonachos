@@ -107,6 +107,23 @@ def test_spell():
     assert spell(123456) == (
         'one-hundred twenty-three-thousand four-hundred fifty-six'
     )
+    assert spell(1234567) == (
+        'one-million two-hundred thirty-four-thousand five-hundred sixty-seven'
+    )
+    assert spell(12345678) == (
+        'twelve-million three-hundred forty-five-thousand'
+        ' six-hundred seventy-eight'
+    )
+    assert spell(123456789) == (
+        'one-hundred twenty-three-million'
+        ' four-hundred fifty-six-thousand'
+        ' seven-hundred eighty-nine'
+    )
+    assert spell(1234567890) == (
+        'one-billion two-hundred thirty-four-million'
+        ' five-hundred sixty-seven-thousand'
+        ' eight-hundred ninety'
+    )
 
 
 if __name__ == '__main__':
