@@ -1,9 +1,10 @@
 import argparse
+from pathlib import Path
 from typing import *
 import bisect
 
 
-def main(n: int) -> None:
+def main(n: int, filepath: Union[str, Path]) -> None:
     """Find the first `n` lexical triples in the Fibonacci sequence.
 
     This routine defines a "lexical triple" to be a triple of numbers such that
@@ -20,11 +21,11 @@ def main(n: int) -> None:
             match1 = spelled[0][-1] == spelled[1][0]
             match2 = spelled[1][-1] == spelled[2][0]
             if match1 and match2:
-                triples.append(merge(spelled))
+                triples.append(subseq)
         except OOMError:
             print(f"Checked up to {subseq}")
             break
-    print(triples)
+    output(triples, userpath=filepath)
 
 
 def update(seq: List[int]) -> List[int]:
@@ -36,6 +37,20 @@ def update(seq: List[int]) -> List[int]:
 def merge(triple: str) -> str:
     """Merge pairs in a lexical triple."""
     return triple[0][:-1] + triple[1] + triple[2][1:]
+
+
+def output(triples: List[str], userpath: Union[str, Path]=None):
+    """Write results or print them to the screen."""
+    if not userpath:
+        print(triples)
+    else:
+        filepath = Path(userpath).expanduser().resolve()
+        with filepath.open('w') as fp:
+            lines = [
+                '(' + ', '.join(str(i) for i in triple) + ')'
+                for triple in triples
+            ]
+            fp.writelines('\n'.join(lines))
 
 
 zero_to_twenty = [
@@ -179,6 +194,13 @@ if __name__ == '__main__':
         'n',
         help="the number of lexical triples to find",
         type=int,
+    )
+    p.add_argument(
+        '-o',
+        '--output',
+        dest='filepath',
+        help="path to which to write results (default: print to screen)",
+        metavar=('PATH'),
     )
     args = p.parse_args()
     main(**vars(args))
