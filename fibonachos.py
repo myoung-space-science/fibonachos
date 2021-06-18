@@ -34,14 +34,6 @@ class FibSub:
         self._subseq = self._subseq[1:] + [value]
         return self
 
-    @property
-    def islexical(self) -> bool:
-        """True if the current subsequence is a lexical tuple."""
-        spelled = [spell(s) for s in self._subseq]
-        return all(
-            spelled[i][-1] == spelled[i+1][0] for i in range(len(spelled)-1)
-        )
-
     def __repr__(self) -> str:
         """The unambiguous representation of this instance."""
         return f"{self.__class__.__qualname__}({self.length})"
@@ -62,14 +54,16 @@ def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     subseq = FibSub(length)
     tuples = []
     while len(tuples) < n:
-        try:
-            if subseq.islexical:
-                tuples.append(list(subseq))
-        except OOMError:
-            print(f"Checked up to {list(subseq)}")
-            break
+        if lexical(subseq):
+            tuples.append(list(subseq))
         subseq = next(subseq)
     output(tuples, userpath=filepath)
+
+
+def lexical(seq: Iterable[int]) -> bool:
+    """True if `seq` forms a lexical tuple."""
+    ends = [end_letters(i) for i in seq]
+    return all(ends[i][-1] == ends[i+1][0] for i in range(len(ends)-1))
 
 
 def output(triples: List[str], userpath: Union[str, Path]=None):
@@ -86,136 +80,115 @@ def output(triples: List[str], userpath: Union[str, Path]=None):
             fp.writelines('\n'.join(lines))
 
 
-zero_to_twenty = [
-    'zero',
-    'one',
-    'two',
-    'three',
-    'four',
-    'five',
-    'six',
-    'seven',
-    'eight',
-    'nine',
-    'ten',
-    'eleven',
-    'twelve',
-    'thirteen',
-    'fourteen',
-    'fifteen',
-    'sixteen',
-    'seventeen',
-    'eightteen',
-    'nineteen',
-    'twenty',
-]
-tens = [
-    'ten',
-    'twenty',
-    'thirty',
-    'forty',
-    'fifty',
-    'sixty',
-    'seventy',
-    'eighty',
-    'ninety',
-]
-higher_order_names = [
-    'hundred',
-    'thousand',
-    'million',
-    'billion',
-    'trillion',
-    'quadrillion',
-    'quintillion',
-    'sextillion',
-    'septillion',
-    'octillion',
-    'nonillion',
-]
-higher_orders = [2] + [3*i for i in range(1, len(higher_order_names))]
-higher_order_map = {i: s for i, s in zip(higher_orders, higher_order_names)}
+digits = {
+    n: s for n, s in enumerate(
+        [
+            'one',
+            'two',
+            'three',
+            'four',
+            'five',
+            'six',
+            'seven',
+            'eight',
+            'nine',
+        ],
+        start=1,
+    )
+}
+teens = {
+    n: s for n, s in enumerate(
+        [
+            'eleven',
+            'twelve',
+            'thirteen',
+            'fourteen',
+            'fifteen',
+            'sixteen',
+            'seventeen',
+            'eightteen',
+            'nineteen',
+        ],
+        start=11,
+    )
+}
 
 
-class OOMError(TypeError):
-    def __init__(self, n: int) -> None:
-        self.n = n
-
-    def __str__(self) -> str:
-        return f"Unrecognized order of magnitude: {self.n}"
-
-
-def spell(n: int) -> str:
-    """Convert an integer to a word."""
-    if not isinstance(n, int) or n < 0:
-        raise TypeError("input must be a non-negative integer.")
-    if 0 <= n <= 20:
-        return zero_to_twenty[n]
-    # Use the string representation to get the order of magnitude. This
-    # leverages the fact that n must be a non-negative integer.
+def end_letters(n: int) -> Tuple[str, str]:
+    """Determine the first and final letters in the spelling of `n`."""
+    if n == 0:
+        return 'z', 'o'
+    special = {**digits, **teens}
+    if n in special:
+        return special[n][0], special[n][-1]
+    if n == 10:
+        return 't', 'n'
+    if 20 <= n <= 99:
+        first = digits[n // 10][0]
+        if n % 10 == 0:
+            return first, 'y'
+        return first, digits[n % 10][-1]
+    if 100 <= n <= 999:
+        first = digits[n // 100][0]
+        if n % 100 == 0:
+            return first, 'd'
+        return first, end_letters(n % 100)[1]
     str_n = str(n)
-    oom = len(str_n) - 1
-    if oom == 1:
-        tens_place, ones_place = divmod(n, 10)
-        if ones_place == 0:
-            return f"{tens[tens_place-1]}"
-        return f"{tens[tens_place-1]}-{zero_to_twenty[ones_place]}"
-    elif 2 <= oom <= higher_orders[-1]:
-        return parse_higher_order(n)
-    else:
-        raise OOMError(oom) from None
+    hundreds = int(str_n[-3:])
+    m = min(3, len(str_n)-3)
+    leading = int(str_n[:m])
+    first = end_letters(leading)[0]
+    if hundreds == 0:
+        return first, 'd' if 1000 <= n <= 999999 else 'n'
+    return first, end_letters(hundreds)[1]
 
 
-def parse_higher_order(n: int) -> str:
-    """Recursively parse orders of magnitude higher than 1."""
-    str_n = str(n)
-    oom = len(str_n) - 1
-    if oom in higher_order_map:
-        base = f'{spell(int(str_n[0]))}-{higher_order_map[oom]}'
-        r = n % int(10**oom)
-    else:
-        orders = list(higher_order_map.keys())
-        pos = bisect.bisect_left(orders, oom) - 1
-        clt = orders[pos]
-        delta = oom - clt
-        base = f'{spell(int(str_n[:delta+1]))}-{higher_order_map[clt]}'
-        r = n % int(10**clt)
-    return f'{base} {spell(r)}' if r > 0 else base
-
-
-def test_spell():
-    """Test the spelling function"""
-    for n, name in enumerate(zero_to_twenty):
-        assert spell(n) == name
-    for n, name in enumerate(tens):
-        assert spell(10 * (n+1)) == name
-    for n in range(21, 30):
-        assert spell(n) == f'twenty-{spell(n - 20)}'
-    for n in range(1, 10):
-        assert spell(100 * n) == f'{spell(n)}-hundred'
-    assert spell(123) == 'one-hundred twenty-three'
-    assert spell(1234) == 'one-thousand two-hundred thirty-four'
-    assert spell(12345) == 'twelve-thousand three-hundred forty-five'
-    assert spell(123456) == (
-        'one-hundred twenty-three-thousand four-hundred fifty-six'
-    )
-    assert spell(1234567) == (
-        'one-million two-hundred thirty-four-thousand five-hundred sixty-seven'
-    )
-    assert spell(12345678) == (
-        'twelve-million three-hundred forty-five-thousand'
-        ' six-hundred seventy-eight'
-    )
-    assert spell(123456789) == (
-        'one-hundred twenty-three-million'
-        ' four-hundred fifty-six-thousand'
-        ' seven-hundred eighty-nine'
-    )
-    assert spell(1234567890) == (
-        'one-billion two-hundred thirty-four-million'
-        ' five-hundred sixty-seven-thousand'
-        ' eight-hundred ninety'
-    )
+def test_letters():
+    """Test the function that extracts first and final letters for a number."""
+    # Test 0-9
+    firsts = ['z', 'o', 't', 't', 'f', 'f', 's', 's', 'e', 'n']
+    finals = ['o', 'e', 'o', 'e', 'r', 'e', 'x', 'n', 't', 'e']
+    for n, (first, final) in enumerate(zip(firsts, finals)):
+        assert end_letters(n) == (first, final)
+    # Test 10-19
+    firsts = ['t', 'e', 't', 't', 'f', 'f', 's', 's', 'e', 'n']
+    finals = ['n', 'n', 'e', 'n', 'n', 'n', 'n', 'n', 'n', 'n']
+    for n, (first, final) in enumerate(zip(firsts, finals), start=10):
+        assert end_letters(n) == (first, final)
+    # Test 20-99 in batches of 10
+    firsts = ['t', 't', 'f', 'f', 's', 's', 'e', 'n']
+    finals = ['y', 'e', 'o', 'e', 'r', 'e', 'x', 'n', 't', 'e']
+    for i, first in enumerate(firsts, start=2):
+        for j, final in enumerate(finals):
+            n = 10*i + j
+            assert end_letters(n) == (first, final)
+    # Spot check from 100-999
+    assert end_letters(100) == ('o', 'd')
+    assert end_letters(123) == ('o', 'e')
+    assert end_letters(234) == ('t', 'r')
+    assert end_letters(345) == ('t', 'e')
+    assert end_letters(456) == ('f', 'x')
+    assert end_letters(567) == ('f', 'n')
+    assert end_letters(678) == ('s', 't')
+    assert end_letters(789) == ('s', 'e')
+    assert end_letters(890) == ('e', 'y')
+    assert end_letters(901) == ('n', 'e')
+    # Sparsely spot check 1000+
+    assert end_letters(1000) == ('o', 'd')
+    assert end_letters(1234) == ('o', 'r')
+    assert end_letters(2345) == ('t', 'e')
+    assert end_letters(10000) == ('t', 'd')
+    assert end_letters(23456) == ('t', 'x')
+    assert end_letters(34567) == ('t', 'n')
+    assert end_letters(100000) == ('o', 'd')
+    assert end_letters(345678) == ('t', 't')
+    assert end_letters(456789) == ('f', 'e')
+    assert end_letters(1000000) == ('o', 'n')
+    assert end_letters(4567890) == ('f', 'y')
+    assert end_letters(5678901) == ('f', 'e')
+    assert end_letters(10000000) == ('o', 'n')
+    assert end_letters(56789012) == ('f', 'e')
+    assert end_letters(67890123) == ('s', 'e')
 
 
 if __name__ == '__main__':
