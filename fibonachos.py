@@ -4,15 +4,18 @@ from typing import *
 import bisect
 
 
-def main(n: int, filepath: Union[str, Path]) -> None:
-    """Find the first `n` lexical triples in the Fibonacci sequence.
+def main(n: int, length: int, filepath: Union[str, Path]) -> None:
+    """Find the first `n` lexical tuples in the Fibonacci sequence.
 
-    This routine defines a "lexical triple" to be a triple of numbers such that
-    the terminal letter in the first word is the initial letter in the second
-    word and the terminal letter in the second word is the initial letter in the
-    third word. Note that this algorithm assumes English as the language.
+    This routine defines a "lexical tuple" to be a tuple of numbers such that
+    the terminal letter in the spelling of the ith number is identical to the
+    initial letter in the spelling of the (i+1)th number for i in {0..L-1},
+    where L is the length of the tuple. More colloquially, the last letter in
+    the spelling of each number ends is the first letter in the spelling of the
+    next number. For example, (5, 8, 13) -> ('five', 'eight', 'thirteen') is a
+    lexical triple. Note that this algorithm assumes English as the language.
     """
-    subseq = [0, 1, 1]
+    subseq = fibonacci_seed(length)
     triples = []
     while len(triples) < n:
         subseq = update(subseq)
@@ -206,6 +209,11 @@ if __name__ == '__main__':
     p.add_argument(
         'n',
         help="the number of lexical triples to find",
+        type=int,
+    )
+    p.add_argument(
+        'length',
+        help="the length of tuples to search for (e.g., 3 for triples)",
         type=int,
     )
     p.add_argument(
