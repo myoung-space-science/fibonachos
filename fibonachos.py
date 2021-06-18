@@ -78,7 +78,7 @@ def main(
         """Do we have enough of `this`?"""
         if not max_num:
             return False
-        return len(this) > max_num
+        return len(this) >= max_num
     subseq = FibSub(length)
     tuples = []
     times = Times(timeout=timeout)
