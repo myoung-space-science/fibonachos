@@ -13,13 +13,17 @@ def main(n: int) -> None:
     """
     subseq = [0, 1, 1]
     triples = []
-    for _ in range(n):
+    while len(triples) < n:
         subseq = update(subseq)
-        spelled = [spell(s) for s in subseq]
-        match1 = spelled[0][-1] == spelled[1][0]
-        match2 = spelled[1][-1] == spelled[2][0]
-        if match1 and match2:
-            triples.append(spelled)
+        try:
+            spelled = [spell(s) for s in subseq]
+            match1 = spelled[0][-1] == spelled[1][0]
+            match2 = spelled[1][-1] == spelled[2][0]
+            if match1 and match2:
+                triples.append(spelled)
+        except OOMError:
+            print(f"Checked up to {subseq}")
+            break
     print(triples)
 
 
@@ -67,6 +71,12 @@ higher_orders = {
     i: s for i, s
     in zip([2, 3, 6, 9], ['hundred', 'thousand', 'million', 'billion'])
 }
+
+
+class OOMError(TypeError):
+    pass
+
+
 def spell(n: int) -> str:
     """Convert an integer to a word."""
     if not isinstance(n, int) or n < 0:
@@ -84,6 +94,8 @@ def spell(n: int) -> str:
         return f"{tens[tens_place-1]}-{zero_to_twenty[ones_place]}"
     elif 2 <= oom <= 9:
         return parse_higher_order(n)
+    else:
+        raise OOMError("Can only spell up to one billion") from None
 
 
 def parse_higher_order(n: int) -> str:
