@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from typing import *
-import bisect
+import time
 
 
 class FibSub:
@@ -39,8 +39,31 @@ class FibSub:
         return f"{self.__class__.__qualname__}({self.length})"
 
 
+class Times:
+    """A class to manage elapsed execution time."""
+    def __init__(self, timeout: float=None) -> None:
+        self.timeout = timeout
+        self._t0 = time.time()
 
-def main(length: int, max_num: int=1, filepath: Union[str, Path]=None) -> None:
+    @property
+    def t0(self) -> float:
+        """The time at which this timer started."""
+        return self._t0
+
+    @property
+    def up(self) -> bool:
+        """True if the elapsed time is greater than a set duration."""
+        if not self.timeout:
+            return False
+        return time.time() - self.t0 > self.timeout
+
+
+def main(
+    length: int,
+    max_num: int=None,
+    timeout: float=None,
+    filepath: Union[str, Path]=None,
+) -> None:
     """Find the first `n` lexical tuples in the Fibonacci sequence.
 
     This routine defines a "lexical tuple" to be a tuple of numbers such that
@@ -51,9 +74,15 @@ def main(length: int, max_num: int=1, filepath: Union[str, Path]=None) -> None:
     next number. For example, (5, 8, 13) -> ('five', 'eight', 'thirteen') is a
     lexical triple. Note that this algorithm assumes English as the language.
     """
+    def enough(this: Iterable) -> bool:
+        """Do we have enough of `this`?"""
+        if not max_num:
+            return False
+        return len(this) > max_num
     subseq = FibSub(length)
     tuples = []
-    while len(tuples) < max_num:
+    times = Times(timeout=timeout)
+    while not enough(tuples) and not times.up:
         if lexical(subseq):
             tuples.append(list(subseq))
         subseq = next(subseq)
@@ -206,7 +235,13 @@ if __name__ == '__main__':
         '--max_num',
         help="the maximum number of lexical tuples to find",
         type=int,
-        default=1,
+    )
+    p.add_argument(
+        '-t',
+        '--timeout',
+        help="the maximum time (in seconds) to run",
+        type=float,
+        metavar=('SECONDS'),
     )
     p.add_argument(
         '-o',
