@@ -72,11 +72,6 @@ def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     output(triples, userpath=filepath)
 
 
-def merge(triple: str) -> str:
-    """Merge pairs in a lexical triple."""
-    return triple[0][:-1] + triple[1] + triple[2][1:]
-
-
 def output(triples: List[str], userpath: Union[str, Path]=None):
     """Write results or print them to the screen."""
     if not userpath:
