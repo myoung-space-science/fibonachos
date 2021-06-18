@@ -62,13 +62,13 @@ def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     subseq = FibSub(length)
     tuples = []
     while len(tuples) < n:
-        current = next(subseq)
         try:
-            if current.islexical:
-                tuples.append(list(current))
+            if subseq.islexical:
+                tuples.append(list(subseq))
         except OOMError:
-            print(f"Checked up to {list(current)}")
+            print(f"Checked up to {list(subseq)}")
             break
+        subseq = next(subseq)
     output(tuples, userpath=filepath)
 
 
