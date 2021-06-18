@@ -95,18 +95,19 @@ def lexical(seq: Iterable[int]) -> bool:
     return all(ends[i][-1] == ends[i+1][0] for i in range(len(ends)-1))
 
 
-def output(triples: List[str], userpath: Union[str, Path]=None):
+def output(results: List[str], userpath: Union[str, Path]=None):
     """Write results or print them to the screen."""
+    lines = [
+        '(' + ', '.join(str(i) for i in result) + ')'
+        for result in results
+    ]
+    joined = '\n'.join(lines)
     if not userpath:
-        print(triples)
-    else:
-        filepath = Path(userpath).expanduser().resolve()
-        with filepath.open('w') as fp:
-            lines = [
-                '(' + ', '.join(str(i) for i in triple) + ')'
-                for triple in triples
-            ]
-            fp.writelines('\n'.join(lines))
+        print(joined)
+        return
+    filepath = Path(userpath).expanduser().resolve()
+    with filepath.open('w') as fp:
+        fp.writelines(joined)
 
 
 digits = {
