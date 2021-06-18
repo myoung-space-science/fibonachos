@@ -38,9 +38,9 @@ class FibSub:
     def islexical(self) -> bool:
         """True if the current subsequence is a lexical tuple."""
         spelled = [spell(s) for s in self._subseq]
-        match1 = spelled[0][-1] == spelled[1][0]
-        match2 = spelled[1][-1] == spelled[2][0]
-        return match1 and match2
+        return all(
+            spelled[i][-1] == spelled[i+1][0] for i in range(len(spelled)-1)
+        )
 
     def __repr__(self) -> str:
         """The unambiguous representation of this instance."""
