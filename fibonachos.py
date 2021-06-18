@@ -77,18 +77,24 @@ def spell(n: int) -> str:
             return f"{tens[tens_place-1]}"
         return f"{tens[tens_place-1]}-{zero_to_twenty[ones_place]}"
     elif 2 <= oom <= 9:
-        if oom in higher_orders:
-            base = f'{spell(int(str_n[0]))}-{higher_orders[oom]}'
-            r = n % int(10**oom)
-            return f'{base} {spell(r)}' if r > 0 else base
-        else:
-            orders = list(higher_orders.keys())
-            pos = bisect.bisect_left(orders, oom) - 1
-            clt = orders[pos]
-            delta = oom - clt
-            base = f'{spell(int(str_n[:delta+1]))}-{higher_orders[clt]}'
-            r = n % int(10**clt)
-            return f'{base} {spell(r)}' if r > 0 else base
+        return parse_higher_order(n)
+
+
+def parse_higher_order(n: int) -> str:
+    """Recursively parse orders of magnitude higher than 1."""
+    str_n = str(n)
+    oom = len(str_n) - 1
+    if oom in higher_orders:
+        base = f'{spell(int(str_n[0]))}-{higher_orders[oom]}'
+        r = n % int(10**oom)
+    else:
+        orders = list(higher_orders.keys())
+        pos = bisect.bisect_left(orders, oom) - 1
+        clt = orders[pos]
+        delta = oom - clt
+        base = f'{spell(int(str_n[:delta+1]))}-{higher_orders[clt]}'
+        r = n % int(10**clt)
+    return f'{base} {spell(r)}' if r > 0 else base
 
 
 def test_spell():
