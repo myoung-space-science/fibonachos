@@ -1,8 +1,6 @@
 import argparse
 from typing import *
-
-
-
+import bisect
 
 
 def main(n: int) -> None:
@@ -84,7 +82,13 @@ def spell(n: int) -> str:
             r = n % int(10**oom)
             return f'{base} {spell(r)}' if r > 0 else base
         else:
-            pass
+            orders = list(higher_orders.keys())
+            pos = bisect.bisect_left(orders, oom) - 1
+            clt = orders[pos]
+            delta = oom - clt
+            base = f'{spell(int(str_n[:delta+1]))}-{higher_orders[clt]}'
+            r = n % int(10**clt)
+            return f'{base} {spell(r)}' if r > 0 else base
 
 
 def test_spell():
@@ -99,6 +103,10 @@ def test_spell():
         assert spell(100 * n) == f'{spell(n)}-hundred'
     assert spell(123) == 'one-hundred twenty-three'
     assert spell(1234) == 'one-thousand two-hundred thirty-four'
+    assert spell(12345) == 'twelve-thousand three-hundred forty-five'
+    assert spell(123456) == (
+        'one-hundred twenty-three-thousand four-hundred fifty-six'
+    )
 
 
 if __name__ == '__main__':
