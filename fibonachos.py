@@ -4,6 +4,42 @@ from typing import *
 import bisect
 
 
+class FibSub:
+    """A rolling subsequence of the Fibonacci sequence."""
+    def __init__(self, length: int) -> None:
+        self.length = length
+        self._subseq = self.seed
+        self._iteration = None
+
+    @property
+    def seed(self) -> List[int]:
+        """Produce the first N values in the Fibonacci sequence."""
+        a, b = 0, 1
+        if self.length == 1:
+            return [a]
+        if self.length == 2:
+            return [a, b]
+        values = [a, b]
+        while len(values) < self.length:
+            values.append(sum(values[-2:]))
+        return values
+
+    def __iter__(self) -> Iterator:
+        """Iterate over the current subsequence."""
+        return iter(self._subseq)
+
+    def __next__(self) -> List[int]:
+        """Produce the next subsequence."""
+        value = self._subseq[-2] + self._subseq[-1]
+        self._subseq = self._subseq[1:] + [value]
+        return self._subseq
+
+    def __repr__(self) -> str:
+        """The unambiguous representation of this instance."""
+        return f"{self.__class__.__qualname__}({self.length})"
+
+
+
 def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     """Find the first `n` lexical tuples in the Fibonacci sequence.
 
@@ -15,39 +51,20 @@ def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     next number. For example, (5, 8, 13) -> ('five', 'eight', 'thirteen') is a
     lexical triple. Note that this algorithm assumes English as the language.
     """
-    subseq = fibonacci_seed(length)
+    subseq = FibSub(length)
     triples = []
     while len(triples) < n:
-        subseq = update(subseq)
+        current = next(subseq)
         try:
-            spelled = [spell(s) for s in subseq]
+            spelled = [spell(s) for s in current]
             match1 = spelled[0][-1] == spelled[1][0]
             match2 = spelled[1][-1] == spelled[2][0]
             if match1 and match2:
-                triples.append(subseq)
+                triples.append(current)
         except OOMError:
-            print(f"Checked up to {subseq}")
+            print(f"Checked up to {current}")
             break
     output(triples, userpath=filepath)
-
-
-def fibonacci_seed(n: int) -> List[int]:
-    """Produce the first `n` values in the Fibonacci sequence."""
-    a, b = 0, 1
-    if n == 1:
-        return [a]
-    if n == 2:
-        return [a, b]
-    values = [a, b]
-    while len(values) < n:
-        values.append(sum(values[-2:]))
-    return values
-
-
-def update(seq: List[int]) -> List[int]:
-    """Update a running subsequence of the Fibonacci sequence."""
-    value = seq[-2] + seq[-1]
-    return seq[1:] + [value]
 
 
 def merge(triple: str) -> str:
