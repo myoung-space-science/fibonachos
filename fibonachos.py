@@ -28,6 +28,19 @@ def main(n: int, filepath: Union[str, Path]) -> None:
     output(triples, userpath=filepath)
 
 
+def fibonacci_seed(n: int) -> List[int]:
+    """Produce the first `n` values in the Fibonacci sequence."""
+    a, b = 0, 1
+    if n == 1:
+        return [a]
+    if n == 2:
+        return [a, b]
+    values = [a, b]
+    while len(values) < n:
+        values.append(sum(values[-2:]))
+    return values
+
+
 def update(seq: List[int]) -> List[int]:
     """Update a running subsequence of the Fibonacci sequence."""
     value = seq[-2] + seq[-1]
