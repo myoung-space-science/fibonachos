@@ -79,7 +79,11 @@ higher_orders = {
 
 
 class OOMError(TypeError):
-    pass
+    def __init__(self, n: int) -> None:
+        self.n = n
+
+    def __str__(self) -> str:
+        return f"Unrecognized order of magnitude: {self.n}"
 
 
 def spell(n: int) -> str:
@@ -100,7 +104,7 @@ def spell(n: int) -> str:
     elif 2 <= oom <= 9:
         return parse_higher_order(n)
     else:
-        raise OOMError("Can only spell up to one billion") from None
+        raise OOMError(oom) from None
 
 
 def parse_higher_order(n: int) -> str:
