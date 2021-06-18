@@ -60,16 +60,16 @@ def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     lexical triple. Note that this algorithm assumes English as the language.
     """
     subseq = FibSub(length)
-    triples = []
-    while len(triples) < n:
+    tuples = []
+    while len(tuples) < n:
         current = next(subseq)
         try:
             if current.islexical:
-                triples.append(list(current))
+                tuples.append(list(current))
         except OOMError:
             print(f"Checked up to {list(current)}")
             break
-    output(triples, userpath=filepath)
+    output(tuples, userpath=filepath)
 
 
 def output(triples: List[str], userpath: Union[str, Path]=None):
