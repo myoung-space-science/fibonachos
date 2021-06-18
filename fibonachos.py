@@ -28,11 +28,19 @@ class FibSub:
         """Iterate over the current subsequence."""
         return iter(self._subseq)
 
-    def __next__(self) -> List[int]:
+    def __next__(self) -> 'FibSub':
         """Produce the next subsequence."""
         value = self._subseq[-2] + self._subseq[-1]
         self._subseq = self._subseq[1:] + [value]
-        return self._subseq
+        return self
+
+    @property
+    def islexical(self) -> bool:
+        """True if the current subsequence is a lexical tuple."""
+        spelled = [spell(s) for s in self._subseq]
+        match1 = spelled[0][-1] == spelled[1][0]
+        match2 = spelled[1][-1] == spelled[2][0]
+        return match1 and match2
 
     def __repr__(self) -> str:
         """The unambiguous representation of this instance."""
@@ -56,13 +64,10 @@ def main(n: int, length: int, filepath: Union[str, Path]) -> None:
     while len(triples) < n:
         current = next(subseq)
         try:
-            spelled = [spell(s) for s in current]
-            match1 = spelled[0][-1] == spelled[1][0]
-            match2 = spelled[1][-1] == spelled[2][0]
-            if match1 and match2:
-                triples.append(current)
+            if current.islexical:
+                triples.append(list(current))
         except OOMError:
-            print(f"Checked up to {current}")
+            print(f"Checked up to {list(current)}")
             break
     output(triples, userpath=filepath)
 
