@@ -1,3 +1,14 @@
+"""
+Find the lexical n-tuples in the Fibonacci sequence.
+
+This routine defines a "lexical n-tuple" to be a tuple of n numbers such that
+the terminal letter in the spelling of the ith number is identical to the
+initial letter in the spelling of the (i+1)th number for i in {0..L-1}, where L
+is the length of the tuple. More colloquially, the final letter in the spelling
+of each number is the first letter in the spelling of the next number, except
+for the last. For example, (5, 8, 13) -> ('five', 'eight', 'thirteen') is a
+lexical triple. Note that this algorithm assumes English as the language.
+"""
 import argparse
 from pathlib import Path
 from typing import *
@@ -67,17 +78,7 @@ class LexicalTuples:
         self.highest = 0
 
     def find_all(self, n: int) -> Tuple[int]:
-        """Find the first `n` lexical tuples in the Fibonacci sequence.
-
-        This routine defines a "lexical tuple" to be a tuple of numbers such
-        that the terminal letter in the spelling of the ith number is identical
-        to the initial letter in the spelling of the (i+1)th number for i in
-        {0..L-1}, where L is the length of the tuple. More colloquially, the
-        last letter in the spelling of each number ends is the first letter in
-        the spelling of the next number. For example, (5, 8, 13) -> ('five',
-        'eight', 'thirteen') is a lexical triple. Note that this algorithm
-        assumes English as the language.
-        """
+        """Find the all lexical `n`-tuples, subject to given constraints."""
         subseq = FibSub(n)
         while not self.satisfied and not self.times.up:
             self.highest = max(subseq)
@@ -228,7 +229,7 @@ def test_end_letters():
 
 if __name__ == '__main__':
     p = argparse.ArgumentParser(
-        description=main.__doc__,
+        description=__doc__,
         formatter_class=argparse.RawTextHelpFormatter,
     )
     p.add_argument(
