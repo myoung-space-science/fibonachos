@@ -58,35 +58,40 @@ class Times:
         return time.time() - self.t0 > self.timeout
 
 
-def main(
-    length: int,
-    max_num: int=None,
-    timeout: float=None,
-    filepath: Union[str, Path]=None,
-) -> None:
-    """Find the first `n` lexical tuples in the Fibonacci sequence.
+class LexicalTuples:
+    """A class to manage lexical tuples of the Fibonacci sequence."""
+    def __init__(self, max_num: int=None, timeout: float=None) -> None:
+        self.max_num = max_num
+        self.times = Times(timeout=timeout)
+        self.tuples = []
+        self.highest = 0
 
-    This routine defines a "lexical tuple" to be a tuple of numbers such that
-    the terminal letter in the spelling of the ith number is identical to the
-    initial letter in the spelling of the (i+1)th number for i in {0..L-1},
-    where L is the length of the tuple. More colloquially, the last letter in
-    the spelling of each number ends is the first letter in the spelling of the
-    next number. For example, (5, 8, 13) -> ('five', 'eight', 'thirteen') is a
-    lexical triple. Note that this algorithm assumes English as the language.
-    """
-    def enough(this: Iterable) -> bool:
-        """Do we have enough of `this`?"""
-        if not max_num:
+    def find_all(self, n: int) -> Tuple[int]:
+        """Find the first `n` lexical tuples in the Fibonacci sequence.
+
+        This routine defines a "lexical tuple" to be a tuple of numbers such
+        that the terminal letter in the spelling of the ith number is identical
+        to the initial letter in the spelling of the (i+1)th number for i in
+        {0..L-1}, where L is the length of the tuple. More colloquially, the
+        last letter in the spelling of each number ends is the first letter in
+        the spelling of the next number. For example, (5, 8, 13) -> ('five',
+        'eight', 'thirteen') is a lexical triple. Note that this algorithm
+        assumes English as the language.
+        """
+        subseq = FibSub(n)
+        while not self.satisfied and not self.times.up:
+            self.highest = max(subseq)
+            if lexical(subseq):
+                self.tuples.append(list(subseq))
+            subseq = next(subseq)
+        return 
+
+    @property
+    def satisfied(self) -> bool:
+        """True if we have found enough tuples."""
+        if not self.max_num:
             return False
-        return len(this) >= max_num
-    subseq = FibSub(length)
-    tuples = []
-    times = Times(timeout=timeout)
-    while not enough(tuples) and not times.up:
-        if lexical(subseq):
-            tuples.append(list(subseq))
-        subseq = next(subseq)
-    output(tuples, userpath=filepath)
+        return len(self.tuples) >= self.max_num
 
 
 def lexical(seq: Iterable[int]) -> bool:
@@ -252,4 +257,9 @@ if __name__ == '__main__':
         metavar=('PATH'),
     )
     args = p.parse_args()
-    main(**vars(args))
+    lextup = LexicalTuples(max_num=args.max_num, timeout=args.timeout)
+    try:
+        lextup.find_all(args.length)
+    except KeyboardInterrupt:
+        print(f"\nSearched up to {lextup.highest}")
+    output(lextup.tuples, userpath=args.filepath)
