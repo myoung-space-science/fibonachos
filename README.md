@@ -1,4 +1,4 @@
-# Fibonachos
+# fiveighthirteen
 
 A fun project based on an interesting observation: When writing out the Fibonacci subsequence 5, 8, 13 in English, the second word in each sequential pair begins with the final letter of the preceding word. Specifically, the last letter in "five" is the first letter in "eight" and the last letter in "eight" is the first letter in "thirteen".
 
